@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.d2c.store.modules.product.mapper.ProductMapper">
+    <resultMap id="baseMap" type="com.d2c.store.modules.product.model.ProductDO">
+
+    </resultMap>
+
+    <update id="doDeductStock">
+        UPDATE P_PRODUCT
+        SET stock = stock - #{quantity}, modify_date=now()
+        WHERE id = #{id}
+    </update>
+
+    <update id="doReturnStock">
+        UPDATE P_PRODUCT
+        SET stock = stock + #{quantity}, modify_date=now()
+        WHERE id = #{id}
+    </update>
+
+    <select id="findByQuery" resultMap="baseMap">
+        SELECT p.* FROM P_PRODUCT p, P_P2P_PRODUCT r
+        WHERE p.id=r.product_id AND r.p2p_id=#{p2pId}
+        <if test="query.status != null">
+            AND p.status = #{query.status}
+        </if>
+        <if test="query.categoryId != null">
+            AND p.category_id = #{query.categoryId}
+        </if>
+        <if test="query.categoryIds != null">
+            AND p.category_id IN
+            <foreach collection="query.categoryIds" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="query.name != null">
+            AND p.name LIKE CONCAT('%',#{query.name},'%')
+        </if>
+        <if test="query.priceL != null">
+            AND p.price &gt;= #{query.priceL}
+        </if>
+        <if test="query.priceR != null">
+            AND p.price &lt;= #{query.priceR}
+        </if>
+        <if test="sort != null">
+            ORDER BY ${sort}
+        </if>
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="countByQuery" resultType="int">
+        SELECT COUNT(p.id) FROM P_PRODUCT p, P_P2P_PRODUCT r
+        WHERE p.id=r.product_id AND r.p2p_id=#{p2pId}
+        <if test="query.status != null">
+            AND p.status = #{query.status}
+        </if>
+        <if test="query.categoryId != null">
+            AND p.category_id = #{query.categoryId}
+        </if>
+        <if test="query.categoryIds != null">
+            AND p.category_id IN
+            <foreach collection="query.categoryIds" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="query.name != null">
+            AND p.name LIKE CONCAT('%',#{query.name},'%')
+        </if>
+        <if test="query.priceL != null">
+            AND p.price &gt;= #{query.priceL}
+        </if>
+        <if test="query.priceR != null">
+            AND p.price &lt;= #{query.priceR}
+        </if>
+    </select>
+
+    <update id="doUpdateSales">
+        UPDATE P_PRODUCT
+        SET sales = sales + #{quantity}, modify_date=now()
+        WHERE id = #{id}
+    </update>
+
+</mapper>
